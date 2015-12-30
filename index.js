@@ -3,25 +3,34 @@
     //Module dependencies
     var geoip = require('geoip');
     var Joi = require('joi');
-
+    var isIPv4 = function(ip) {
+        var valid = Joi.validate(ip, Joi.string().ip({
+            version: [
+                'ipv4'
+            ],
+            cidr: 'required'
+        }));
+        if (valid.error) {
+            return false;
+        } else {
+            return true;
+        }
+    };
+    var isIPv6 = function(ip) {
+        var valid = Joi.validate(ip, Joi.string().ip({
+            version: [
+                'ipv6'
+            ],
+            cidr: 'required'
+        }));
+        if (valid.error) {
+            return false;
+        } else {
+            return true;
+        }
+    };
 
     module.exports = {
-        isIPv4: function(ip) {
-            return Joi.validate(ip, Joi.string().ip({
-                version: [
-                    'ipv4'
-                ],
-                cidr: 'required'
-            }));
-        },
-        isIPv6: function(ip) {
-            return Joi.validate(ip, Joi.string().ip({
-                version: [
-                    'ipv6'
-                ],
-                cidr: 'required'
-            }));
-        },
         getGeoByIPv4: function(ipv4) {
             //ipv4 address lookup
             // Open the GeoLiteCity.dat file first.
@@ -44,14 +53,14 @@
             console.log(city6_obj);
             return city6_obj;
         },
-        getGeo:function(ip){
-        	if(!this.isIPv4(ip).error){
-        		return this.getGeoByIPv4(ip);
-        	}else if(!this.isIPv6(ip).error){
-        		return this.getGeoByIPv4(ip);
-        	}else{
-        		return {};
-        	}
+        getGeo: function(ip) {
+            if (isIPv4(ip)) {
+                return this.getGeoByIPv4(ip);
+            } else if (isIPv6(ip)) {
+                return this.getGeoByIPv4(ip);
+            } else {
+                return {};
+            }
         }
     }
 
